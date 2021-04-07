@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/kolesa-team/go-webp/utils"
+	"github.com/bep/go-webp/utils"
 )
 
 func TestNewDecoder(t *testing.T) {

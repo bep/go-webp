@@ -1,121 +1,28 @@
-# go-webp
-Golang Webp library for encoding and decoding, with C binding for Google [libwebp](https://developers.google.com/speed/webp/docs/api)
+[![Go Report Card](https://goreportcard.com/badge/github.com/bep/golibwebp)](https://goreportcard.com/report/github.com/bep/golibwebp)
+[![libwebp Version](https://img.shields.io/badge/libwebp-v1.2.0-blue)](https://github.com/sass/libwebp)
+[![codecov](https://codecov.io/gh/bep/golibwebp/branch/master/graph/badge.svg)](https://codecov.io/gh/bep/golibwebp)
+[![GoDoc](https://godoc.org/github.com/bep/golibwebp/libwebp?status.svg)](https://godoc.org/github.com/bep/golibwebp/libwebp)
 
-## Install libwebp
-#### MacOS:
+This library provides C bindings and an API for **encoding** Webp images using Google's [libwebp](https://github.com/webmproject/libwebp).
+
+It is based on [go-webp](https://github.com/kolesa-team/go-webp), but this includes and builds the libwebp C source from a versioned Git subtree.
+
+
+## Update libwebp version
+
+1. Pull in the relevant libwebp version, e.g. `./pull-libwebp.sh v1.2.0`
+2. Regenerate wrappers with `go generate ./gen`
+3. Update the libwebp version badge above.
+
+## Local development
+
+Compiling C code isn' particulary fast; if you install libwebp on your PC you can link against that, useful during development.
+
+On a Mac you may do something like:
+
 ```bash
 brew install webp
-```
-#### Linux:
-```bash
-sudo apt-get update
-sudo apt-get install libwebp-dev
+go test ./libwebp -tags dev
 ```
 
-## Install go-webp
-`go get -u github.com/kolesa-team/go-webp`
-
-## Example 
-#### Install libwebp library
-For MacOs:
-```bash
-brew update
-brew install webp
-```
-For Ubuntu:
-```bash
-apt update
-apt install libwebp-dev
-```
-
-#### Decode:
-```go
-package main
-
-import (
-	"image/jpeg"
-	"log"
-	"os"
-
-	"github.com/kolesa-team/go-webp/decoder"
-	"github.com/kolesa-team/go-webp/webp"
-)
-
-func main() {
-	file, err := os.Open("test_data/images/m4_q75.webp")
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	output, err := os.Create("example/output_decode.jpg")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer output.Close()
-
-	img, err := webp.Decode(file, &decoder.Options{})
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	if err = jpeg.Encode(output, img, &jpeg.Options{Quality:75}); err != nil {
-		log.Fatalln(err)
-	}
-}
-```
-
-```bash
-go run example/decode/main.go
-```
-
-#### Encode
-```go
-package main
-
-import (
-	"github.com/kolesa-team/go-webp/encoder"
-	"github.com/kolesa-team/go-webp/webp"
-	"image/jpeg"
-	"log"
-	"os"
-)
-
-func main() {
-	file, err := os.Open("test_data/images/source.jpg")
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	img, err := jpeg.Decode(file)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	output, err := os.Create("example/output_decode.webp")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer output.Close()
-
-	options, err := encoder.NewLossyEncoderOptions(encoder.PresetDefault, 75)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	if err := webp.Encode(output, img, options); err != nil {
-		log.Fatalln(err)
-	}
-}
-```
-```bash
-go run example/encode/main.go
-```
-
-## TODO
-- return aux stats
-- container api
-- incremental decoding
-
-## License
-BSD licensed. See the LICENSE file for details.
 

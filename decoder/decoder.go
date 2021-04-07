@@ -14,7 +14,7 @@ import (
 	"io/ioutil"
 	"unsafe"
 
-	"github.com/kolesa-team/go-webp/utils"
+	"github.com/bep/go-webp/utils"
 )
 
 type Decoder struct {

@@ -1,3 +1,3 @@
-module github.com/kolesa-team/go-webp
+module github.com/bep/go-webp
 
-go 1.10
+go 1.16
