@@ -3,33 +3,30 @@ package libwebp
 /*
 #include <stdlib.h>
 #include <webp/encode.h>
-static uint8_t* encodeNRBBA(WebPConfig* config, const uint8_t* rgba, int width, int height, int stride, size_t* output_size) {
+
+static uint8_t* encodeNRGBA(WebPConfig* config, const uint8_t* rgba, int width, int height, int stride, size_t* output_size) {
 	WebPPicture pic;
 	WebPMemoryWriter wrt;
 	int ok;
-
 	if (!WebPPictureInit(&pic)) {
 		return NULL;
 	}
-
 	pic.use_argb = 1;
 	pic.width = width;
 	pic.height = height;
 	pic.writer = WebPMemoryWrite;
 	pic.custom_ptr = &wrt;
 	WebPMemoryWriterInit(&wrt);
-
 	ok = WebPPictureImportRGBA(&pic, rgba, stride) && WebPEncode(config, &pic);
 	WebPPictureFree(&pic);
-
 	if (!ok) {
 		WebPMemoryWriterClear(&wrt);
 		return NULL;
 	}
-
 	*output_size = wrt.size;
 	return wrt.mem;
 }
+
 */
 import "C"
 import (
@@ -49,33 +46,43 @@ type (
 	}
 )
 
-func NewEncoder(src image.Image, options options.EncodingOptions) (*Encoder, error) {
-	config, err := encodingOptionsToCConfig(options)
+// Encode encodes src into w considering the options in o.
+//
+// TODO(bep) ColorSpace
+// TODO(bep) Can we handle *image.YCbCr without conversion?
+// TODO(bep) Grayscale
+func Encode(w io.Writer, src image.Image, o options.EncodingOptions) error {
+	config, err := encodingOptionsToCConfig(o)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	e := &Encoder{config: config}
+	var (
+		bounds = src.Bounds()
+		stride int
+		rgba   *C.uint8_t
+	)
 
 	switch v := src.(type) {
+	case *image.RGBA:
+		rgba = (*C.uint8_t)(&v.Pix[0])
+		stride = v.Stride
 	case *image.NRGBA:
-		e.img = v
+		rgba = (*C.uint8_t)(&v.Pix[0])
+		stride = v.Stride
 	default:
-		e.img = e.convertToNRGBA(src)
+		img := ConvertToNRGBA(src)
+		rgba = (*C.uint8_t)(&img.Pix[0])
+		stride = img.Stride
 	}
 
-	return e, nil
-}
-
-func (e *Encoder) Encode(w io.Writer) error {
 	var size C.size_t
-
-	output := C.encodeNRBBA(
-		e.config,
-		(*C.uint8_t)(&e.img.Pix[0]),
-		C.int(e.img.Rect.Max.X),
-		C.int(e.img.Rect.Max.Y),
-		C.int(e.img.Stride),
+	output := C.encodeNRGBA(
+		config,
+		rgba,
+		C.int(bounds.Max.X),
+		C.int(bounds.Max.Y),
+		C.int(stride),
 		&size,
 	)
 
@@ -84,12 +91,12 @@ func (e *Encoder) Encode(w io.Writer) error {
 	}
 	defer C.free(unsafe.Pointer(output))
 
-	_, err := w.Write(((*[1 << 30]byte)(unsafe.Pointer(output)))[0:int(size):int(size)])
+	_, err = w.Write(((*[1 << 30]byte)(unsafe.Pointer(output)))[0:int(size):int(size)])
 
 	return err
 }
 
-func (e *Encoder) convertToNRGBA(src image.Image) *image.NRGBA {
+func ConvertToNRGBA(src image.Image) *image.NRGBA {
 	dst := image.NewNRGBA(src.Bounds())
 	draw.Draw(dst, dst.Bounds(), src, src.Bounds().Min, draw.Src)
 
@@ -105,6 +112,9 @@ func encodingOptionsToCConfig(o options.EncodingOptions) (*C.WebPConfig, error) 
 	}
 
 	cfg.quality = quality
+	if quality == 0 {
+		cfg.lossless = C.int(1)
+	}
 
 	if C.WebPValidateConfig(cfg) == 0 {
 		return nil, errors.New("failed to validate config")

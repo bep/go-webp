@@ -11,9 +11,5 @@ import (
 
 // Encode encodes src as Webp into w using the options in o.
 func Encode(w io.Writer, src image.Image, o options.EncodingOptions) error {
-	if enc, err := libwebp.NewEncoder(src, o); err != nil {
-		return err
-	} else {
-		return enc.Encode(w)
-	}
+	return libwebp.Encode(w, src, o)
 }
