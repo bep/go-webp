@@ -38,24 +38,24 @@ import (
 	"image/draw"
 	"io"
 	"unsafe"
+
+	"github.com/bep/gowebp/libwebp/options"
 )
 
 type (
 	Encoder struct {
-		options *Options
-		config  *C.WebPConfig
-		img     *image.NRGBA
+		config *C.WebPConfig
+		img    *image.NRGBA
 	}
 )
 
-func NewEncoder(src image.Image, options *Options) (e *Encoder, err error) {
-	var config *C.WebPConfig
-
-	if config, err = options.GetConfig(); err != nil {
+func NewEncoder(src image.Image, options options.EncodingOptions) (*Encoder, error) {
+	config, err := encodingOptionsToCConfig(options)
+	if err != nil {
 		return nil, err
 	}
 
-	e = &Encoder{options: options, config: config}
+	e := &Encoder{config: config}
 
 	switch v := src.(type) {
 	case *image.NRGBA:
@@ -64,7 +64,7 @@ func NewEncoder(src image.Image, options *Options) (e *Encoder, err error) {
 		e.img = e.convertToNRGBA(src)
 	}
 
-	return
+	return e, nil
 }
 
 func (e *Encoder) Encode(w io.Writer) error {
@@ -89,9 +89,27 @@ func (e *Encoder) Encode(w io.Writer) error {
 	return err
 }
 
-func (e *Encoder) convertToNRGBA(src image.Image) (dst *image.NRGBA) {
-	dst = image.NewNRGBA(src.Bounds())
+func (e *Encoder) convertToNRGBA(src image.Image) *image.NRGBA {
+	dst := image.NewNRGBA(src.Bounds())
 	draw.Draw(dst, dst.Bounds(), src, src.Bounds().Min, draw.Src)
 
-	return
+	return dst
+}
+
+func encodingOptionsToCConfig(o options.EncodingOptions) (*C.WebPConfig, error) {
+	cfg := &C.WebPConfig{}
+	quality := C.float(o.Quality)
+
+	if C.WebPConfigPreset(cfg, C.WebPPreset(o.EncodingPreset), quality) == 0 {
+		return nil, errors.New("failed to init encoder config")
+	}
+
+	cfg.quality = quality
+
+	if C.WebPValidateConfig(cfg) == 0 {
+		return nil, errors.New("failed to validate config")
+	}
+
+	return cfg, nil
+
 }
