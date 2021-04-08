@@ -1,3 +1,3 @@
-module github.com/bep/go-webp
+module github.com/bep/gowebp
 
 go 1.16

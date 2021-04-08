@@ -4,7 +4,7 @@ import (
 	"image"
 	"io"
 
-	"github.com/bep/go-webp/internal/libwebp"
+	"github.com/bep/gowebp/internal/libwebp"
 )
 
 func Encode(w io.Writer, src image.Image) error {
