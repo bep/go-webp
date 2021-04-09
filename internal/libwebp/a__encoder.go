@@ -2,7 +2,12 @@ package libwebp
 
 /*
 #include <stdlib.h>
+#include <string.h> // for memset
+#ifndef LIBWEBP_NO_SRC
 #include <encode.h>
+#else
+#include <webp/encode.h>
+#endif
 
 static uint8_t* encodeNRGBA(WebPConfig* config, const uint8_t* rgba, int width, int height, int stride, size_t* output_size) {
 	WebPPicture pic;
@@ -27,8 +32,58 @@ static uint8_t* encodeNRGBA(WebPConfig* config, const uint8_t* rgba, int width, 
 	return wrt.mem;
 }
 
+static uint8_t* encodeGray(WebPConfig* config, uint8_t *y, int width, int height, int stride, size_t* output_size) {
+	WebPPicture pic;
+	WebPMemoryWriter wrt;
+
+	int ok;
+	if (!WebPPictureInit(&pic)) {
+		return NULL;
+	}
+
+	pic.use_argb = 0;
+	pic.width = width;
+	pic.height = height;
+	pic.y_stride = stride;
+	pic.writer = WebPMemoryWrite;
+	pic.custom_ptr = &wrt;
+	WebPMemoryWriterInit(&wrt);
+
+	const int uvWidth = (int)(((int64_t)width + 1) >> 1);
+  	const int uvHeight = (int)(((int64_t)height + 1) >> 1);
+  	const int uvStride = uvWidth;
+	const int uvSize = uvStride * uvHeight;
+	const int gray = 128;
+	uint8_t* chroma;
+
+	chroma = malloc(uvSize);
+	if (!chroma) {
+		return 0;
+	}
+	memset(chroma, gray, uvSize);
+
+	pic.y = y;
+	pic.u = chroma;
+	pic.v = chroma;
+	pic.uv_stride = uvStride;
+
+	ok = WebPEncode(config, &pic);
+
+	free(chroma);
+
+	WebPPictureFree(&pic);
+	if (!ok) {
+		WebPMemoryWriterClear(&wrt);
+		return NULL;
+	}
+	*output_size = wrt.size;
+	return wrt.mem;
+
+}
+
 */
 import "C"
+
 import (
 	"errors"
 	"image"
@@ -50,7 +105,7 @@ type (
 //
 // TODO(bep) ColorSpace
 // TODO(bep) Can we handle *image.YCbCr without conversion?
-// TODO(bep) Grayscale
+// TODO(bep) sharp YUV: https://www.ctrl.blog/entry/webp-sharp-yuv.html
 func Encode(w io.Writer, src image.Image, o options.EncodingOptions) error {
 	config, err := encodingOptionsToCConfig(o)
 	if err != nil {
@@ -59,35 +114,53 @@ func Encode(w io.Writer, src image.Image, o options.EncodingOptions) error {
 
 	var (
 		bounds = src.Bounds()
-		stride int
-		rgba   *C.uint8_t
+		output *C.uchar
+		size   C.size_t
 	)
 
 	switch v := src.(type) {
 	case *image.RGBA:
-		rgba = (*C.uint8_t)(&v.Pix[0])
-		stride = v.Stride
+		output = C.encodeNRGBA(
+			config,
+			(*C.uint8_t)(&v.Pix[0]),
+			C.int(bounds.Max.X),
+			C.int(bounds.Max.Y),
+			C.int(v.Stride),
+			&size,
+		)
 	case *image.NRGBA:
-		rgba = (*C.uint8_t)(&v.Pix[0])
-		stride = v.Stride
+		output = C.encodeNRGBA(
+			config,
+			(*C.uint8_t)(&v.Pix[0]),
+			C.int(bounds.Max.X),
+			C.int(bounds.Max.Y),
+			C.int(v.Stride),
+			&size,
+		)
+	case *image.Gray:
+		gray := (*C.uint8_t)(&v.Pix[0])
+		output = C.encodeGray(
+			config,
+			gray,
+			C.int(bounds.Max.X),
+			C.int(bounds.Max.Y),
+			C.int(v.Stride),
+			&size,
+		)
 	default:
-		img := ConvertToNRGBA(src)
-		rgba = (*C.uint8_t)(&img.Pix[0])
-		stride = img.Stride
+		rgba := ConvertToNRGBA(src)
+		output = C.encodeNRGBA(
+			config,
+			(*C.uint8_t)(&rgba.Pix[0]),
+			C.int(bounds.Max.X),
+			C.int(bounds.Max.Y),
+			C.int(rgba.Stride),
+			&size,
+		)
 	}
 
-	var size C.size_t
-	output := C.encodeNRGBA(
-		config,
-		rgba,
-		C.int(bounds.Max.X),
-		C.int(bounds.Max.Y),
-		C.int(stride),
-		&size,
-	)
-
 	if output == nil || size == 0 {
-		return errors.New("cannot encode webppicture")
+		return errors.New("failed to encode")
 	}
 	defer C.free(unsafe.Pointer(output))
 
@@ -107,13 +180,20 @@ func encodingOptionsToCConfig(o options.EncodingOptions) (*C.WebPConfig, error) 
 	cfg := &C.WebPConfig{}
 	quality := C.float(o.Quality)
 
+	cfg.quality = quality
+
 	if C.WebPConfigPreset(cfg, C.WebPPreset(o.EncodingPreset), quality) == 0 {
 		return nil, errors.New("failed to init encoder config")
 	}
 
-	cfg.quality = quality
 	if quality == 0 {
-		cfg.lossless = C.int(1)
+		// Activate the lossless compression mode with the desired efficiency level
+		// between 0 (fastest, lowest compression) and 9 (slower, best compression).
+		// A good default level is '6', providing a fair tradeoff between compression
+		// speed and final compressed size.
+		if C.WebPConfigLosslessPreset(cfg, C.int(6)) == 0 {
+			return nil, errors.New("failed to init lossless preset")
+		}
 	}
 
 	if C.WebPValidateConfig(cfg) == 0 {
@@ -121,5 +201,4 @@ func encodingOptionsToCConfig(o options.EncodingOptions) (*C.WebPConfig, error) 
 	}
 
 	return cfg, nil
-
 }

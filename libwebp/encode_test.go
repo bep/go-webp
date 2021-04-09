@@ -2,14 +2,17 @@ package libwebp
 
 import (
 	"bytes"
-	"fmt"
 	"image"
 	"image/draw"
 	"image/jpeg"
+	_ "image/jpeg"
+	_ "image/png"
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/bep/gowebp/internal/libwebp"
@@ -21,24 +24,28 @@ import (
 func TestEncode(t *testing.T) {
 	writeGolden := false
 	for _, test := range []struct {
-		name string
-		opts options.EncodingOptions
+		name      string
+		inputFile string
+		opts      options.EncodingOptions
 	}{
-		{"lossy", options.EncodingOptions{Quality: 75}},
-		{"lossless", options.EncodingOptions{}},
+		{"lossy", "source.jpg", options.EncodingOptions{Quality: 75}},
+		{"lossless", "source.jpg", options.EncodingOptions{}},
+		{"bw", "bw-gopher.png", options.EncodingOptions{Quality: 75}},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			r, err := os.Open("../test_data/images/source.jpg")
+			r, err := os.Open(filepath.Join("../test_data/images", test.inputFile))
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			img, err := jpeg.Decode(r)
+			img, _, err := image.Decode(r)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			targetFilename := fmt.Sprintf("../test_data/images/target-%s.webp", test.name)
+			targetName := strings.TrimSuffix(test.inputFile, filepath.Ext(test.inputFile)) + "-" + test.name + ".webp"
+
+			targetFilename := filepath.Join("../test_data/images/golden", targetName)
 			b := &bytes.Buffer{}
 			var w io.Writer = b
 
@@ -72,7 +79,6 @@ func TestEncode(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func BenchmarkEncode(b *testing.B) {

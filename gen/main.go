@@ -60,7 +60,7 @@ func main() {
 		if err := ioutil.WriteFile(target, []byte(fmt.Sprintf(`#ifndef LIBWEBP_NO_SRC
 #include "../../libwebp_src/src/%s"
 #endif
-`, filename)), 0644); err != nil {
+`, filename)), 0o644); err != nil {
 			return err
 		}
 
@@ -70,5 +70,4 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 }

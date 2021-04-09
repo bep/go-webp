@@ -10,13 +10,17 @@
 
 package libwebp
 
-import _ "runtime/cgo"
-import "unsafe"
+import (
+	_ "runtime/cgo"
+	"unsafe"
+)
 
 type _ unsafe.Pointer
 
-type _swig_fnptr *byte
-type _swig_memberptr *byte
+type (
+	_swig_fnptr     *byte
+	_swig_memberptr *byte
+)
 
 //extern libwebpSwigCgocall
 func SwigCgocall()
