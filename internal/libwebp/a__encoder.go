@@ -2,7 +2,7 @@ package libwebp
 
 /*
 #include <stdlib.h>
-#include <webp/encode.h>
+#include <encode.h>
 
 static uint8_t* encodeNRGBA(WebPConfig* config, const uint8_t* rgba, int width, int height, int stride, size_t* output_size) {
 	WebPPicture pic;

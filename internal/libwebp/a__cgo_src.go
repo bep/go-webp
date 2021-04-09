@@ -2,5 +2,5 @@
 
 package libwebp
 
-// #cgo linux LDFLAGS: -lm
+// #cgo CFLAGS: -I../../libwebp_src
 import "C"
