@@ -28,7 +28,7 @@ func TestEncode(t *testing.T) {
 		inputFile string
 		opts      options.EncodingOptions
 	}{
-		{"lossy", "source.jpg", options.EncodingOptions{Quality: 75}},
+		{"lossy", "source.jpg", options.EncodingOptions{Quality: 75, EncodingPreset: options.PresetPhoto, UseSharpYuv: true}},
 		{"lossless", "source.jpg", options.EncodingOptions{}},
 		{"bw", "bw-gopher.png", options.EncodingOptions{Quality: 75}},
 	} {

@@ -103,9 +103,8 @@ type (
 
 // Encode encodes src into w considering the options in o.
 //
-// TODO(bep) ColorSpace
 // TODO(bep) Can we handle *image.YCbCr without conversion?
-// TODO(bep) sharp YUV: https://www.ctrl.blog/entry/webp-sharp-yuv.html
+// TODO(bep) check filled alpha channel.
 func Encode(w io.Writer, src image.Image, o options.EncodingOptions) error {
 	config, err := encodingOptionsToCConfig(o)
 	if err != nil {
@@ -180,8 +179,6 @@ func encodingOptionsToCConfig(o options.EncodingOptions) (*C.WebPConfig, error) 
 	cfg := &C.WebPConfig{}
 	quality := C.float(o.Quality)
 
-	cfg.quality = quality
-
 	if C.WebPConfigPreset(cfg, C.WebPPreset(o.EncodingPreset), quality) == 0 {
 		return nil, errors.New("failed to init encoder config")
 	}
@@ -196,9 +193,21 @@ func encodingOptionsToCConfig(o options.EncodingOptions) (*C.WebPConfig, error) 
 		}
 	}
 
+	cfg.use_sharp_yuv = boolToCInt(o.UseSharpYuv)
+
 	if C.WebPValidateConfig(cfg) == 0 {
 		return nil, errors.New("failed to validate config")
 	}
 
 	return cfg, nil
+}
+
+func boolToCInt(b bool) (result C.int) {
+	result = 0
+
+	if b {
+		result = 1
+	}
+
+	return
 }

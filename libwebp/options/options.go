@@ -18,5 +18,8 @@ type (
 
 		// The encoding preset to use.
 		EncodingPreset
+
+		// Use sharp (and slow) RGB->YUV conversion.
+		UseSharpYuv bool
 	}
 )
