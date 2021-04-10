@@ -82,28 +82,41 @@ func TestEncode(t *testing.T) {
 }
 
 func BenchmarkEncode(b *testing.B) {
-	r, err := os.Open("../test_data/images/source.jpg")
-	if err != nil {
-		b.Fatal(err)
+	for _, test := range []struct {
+		name      string
+		inputFile string
+		opts      options.EncodingOptions
+	}{
+		{"lossy", "source.jpg", options.EncodingOptions{Quality: 75, EncodingPreset: options.PresetPhoto}},
+		{"lossy-sharp-yuv", "source.jpg", options.EncodingOptions{Quality: 75, EncodingPreset: options.PresetPhoto, UseSharpYuv: true}},
+		{"lossless", "source.jpg", options.EncodingOptions{}},
+		{"bw", "bw-gopher.png", options.EncodingOptions{Quality: 75}},
+	} {
+		b.Run(test.name, func(b *testing.B) {
+			r, err := os.Open(filepath.Join("../test_data/images", test.inputFile))
+			if err != nil {
+				b.Fatal(err)
+			}
+
+			img, _, err := image.Decode(r)
+			if err != nil {
+				b.Fatal(err)
+			}
+
+			// Encode will convert to NRGBA if needed. Do that here so we
+			// don't get those numbers included in the below.
+			imgrgba := libwebp.ConvertToNRGBA(img)
+
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				if err = Encode(ioutil.Discard, imgrgba, test.opts); err != nil {
+					b.Fatal(err)
+				}
+			}
+
+		})
 	}
 
-	img, err := jpeg.Decode(r)
-	if err != nil {
-		b.Fatal(err)
-	}
-
-	// Encode will convert to NRGBA if needed. Do that here so we
-	// don't get those numbers included in the below.
-	imgrgba := libwebp.ConvertToNRGBA(img)
-
-	opts := options.EncodingOptions{Quality: 75}
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		if err = Encode(ioutil.Discard, imgrgba, opts); err != nil {
-			b.Fatal(err)
-		}
-	}
 }
 
 // Just to have something to compare with.
