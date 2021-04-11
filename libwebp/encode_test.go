@@ -30,7 +30,7 @@ type testCase struct {
 }
 
 var testCases = []testCase{
-	{"lossy", "source.jpg", options.EncodingOptions{Quality: 75, EncodingPreset: options.PresetPhoto, UseSharpYuv: true}},
+	{"lossy", "source.jpg", options.EncodingOptions{Quality: 75, EncodingPreset: options.EncodingPresetPhoto, UseSharpYuv: true}},
 	{"lossless", "source.jpg", options.EncodingOptions{}},
 	{"bw", "bw-gopher.png", options.EncodingOptions{Quality: 75}},
 }

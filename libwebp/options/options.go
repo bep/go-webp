@@ -1,12 +1,12 @@
 package options
 
 const (
-	PresetDefault EncodingPreset = iota
-	PresetPicture
-	PresetPhoto
-	PresetDrawing
-	PresetIcon
-	PresetText
+	EncodingPresetDefault EncodingPreset = iota
+	EncodingPresetPicture
+	EncodingPresetPhoto
+	EncodingPresetDrawing
+	EncodingPresetIcon
+	EncodingPresetText
 )
 
 type (
