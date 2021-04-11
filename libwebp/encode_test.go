@@ -2,6 +2,7 @@ package libwebp
 
 import (
 	"bytes"
+	"flag"
 	"image"
 	"image/draw"
 	"image/jpeg"
@@ -14,6 +15,7 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/bep/gowebp/internal/libwebp"
 
@@ -21,17 +23,21 @@ import (
 	"golang.org/x/image/webp"
 )
 
+type testCase struct {
+	name      string
+	inputFile string
+	opts      options.EncodingOptions
+}
+
+var testCases = []testCase{
+	{"lossy", "source.jpg", options.EncodingOptions{Quality: 75, EncodingPreset: options.PresetPhoto, UseSharpYuv: true}},
+	{"lossless", "source.jpg", options.EncodingOptions{}},
+	{"bw", "bw-gopher.png", options.EncodingOptions{Quality: 75}},
+}
+
 func TestEncode(t *testing.T) {
 	writeGolden := false
-	for _, test := range []struct {
-		name      string
-		inputFile string
-		opts      options.EncodingOptions
-	}{
-		{"lossy", "source.jpg", options.EncodingOptions{Quality: 75, EncodingPreset: options.PresetPhoto, UseSharpYuv: true}},
-		{"lossless", "source.jpg", options.EncodingOptions{}},
-		{"bw", "bw-gopher.png", options.EncodingOptions{Quality: 75}},
-	} {
+	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
 			r, err := os.Open(filepath.Join("../test_data/images", test.inputFile))
 			if err != nil {
@@ -81,17 +87,39 @@ func TestEncode(t *testing.T) {
 	}
 }
 
+var longrunning = flag.Bool("longrunning", false, "Enable long running tests.")
+
+// go test -v ./libwebp --longrunning
+func TestEncodeLongRunning(t *testing.T) {
+	if !(*longrunning) {
+		t.Skip("Skip long running test...")
+	}
+	t.Log("Start...")
+	for i := 0; i < 60; i++ {
+		for _, test := range testCases {
+			r, err := os.Open(filepath.Join("../test_data/images", test.inputFile))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			img, _, err := image.Decode(r)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if err = Encode(ioutil.Discard, img, test.opts); err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		time.Sleep(2 * time.Second)
+	}
+
+	t.Log("Done...")
+}
+
 func BenchmarkEncode(b *testing.B) {
-	for _, test := range []struct {
-		name      string
-		inputFile string
-		opts      options.EncodingOptions
-	}{
-		{"lossy", "source.jpg", options.EncodingOptions{Quality: 75, EncodingPreset: options.PresetPhoto}},
-		{"lossy-sharp-yuv", "source.jpg", options.EncodingOptions{Quality: 75, EncodingPreset: options.PresetPhoto, UseSharpYuv: true}},
-		{"lossless", "source.jpg", options.EncodingOptions{}},
-		{"bw", "bw-gopher.png", options.EncodingOptions{Quality: 75}},
-	} {
+	for _, test := range testCases {
 		b.Run(test.name, func(b *testing.B) {
 			r, err := os.Open(filepath.Join("../test_data/images", test.inputFile))
 			if err != nil {
