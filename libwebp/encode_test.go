@@ -19,20 +19,20 @@ import (
 
 	"github.com/bep/gowebp/internal/libwebp"
 
-	"github.com/bep/gowebp/libwebp/options"
+	"github.com/bep/gowebp/libwebp/webpoptions"
 	"golang.org/x/image/webp"
 )
 
 type testCase struct {
 	name      string
 	inputFile string
-	opts      options.EncodingOptions
+	opts      webpoptions.EncodingOptions
 }
 
 var testCases = []testCase{
-	{"lossy", "source.jpg", options.EncodingOptions{Quality: 75, EncodingPreset: options.EncodingPresetPhoto, UseSharpYuv: true}},
-	{"lossless", "source.jpg", options.EncodingOptions{}},
-	{"bw", "bw-gopher.png", options.EncodingOptions{Quality: 75}},
+	{"lossy", "source.jpg", webpoptions.EncodingOptions{Quality: 75, EncodingPreset: webpoptions.EncodingPresetPhoto, UseSharpYuv: true}},
+	{"lossless", "source.jpg", webpoptions.EncodingOptions{}},
+	{"bw", "bw-gopher.png", webpoptions.EncodingOptions{Quality: 75}},
 }
 
 func TestEncode(t *testing.T) {

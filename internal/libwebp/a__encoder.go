@@ -91,7 +91,7 @@ import (
 	"io"
 	"unsafe"
 
-	"github.com/bep/gowebp/libwebp/options"
+	"github.com/bep/gowebp/libwebp/webpoptions"
 )
 
 type (
@@ -105,7 +105,7 @@ type (
 //
 // TODO(bep) Can we handle *image.YCbCr without conversion?
 // TODO(bep) check filled alpha channel.
-func Encode(w io.Writer, src image.Image, o options.EncodingOptions) error {
+func Encode(w io.Writer, src image.Image, o webpoptions.EncodingOptions) error {
 	config, err := encodingOptionsToCConfig(o)
 	if err != nil {
 		return err
@@ -175,7 +175,7 @@ func ConvertToNRGBA(src image.Image) *image.NRGBA {
 	return dst
 }
 
-func encodingOptionsToCConfig(o options.EncodingOptions) (*C.WebPConfig, error) {
+func encodingOptionsToCConfig(o webpoptions.EncodingOptions) (*C.WebPConfig, error) {
 	cfg := &C.WebPConfig{}
 	quality := C.float(o.Quality)
 

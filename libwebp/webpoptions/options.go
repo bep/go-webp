@@ -1,4 +1,4 @@
-package options
+package webpoptions
 
 const (
 	EncodingPresetDefault EncodingPreset = iota
