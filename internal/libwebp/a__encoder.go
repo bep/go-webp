@@ -103,8 +103,9 @@ type (
 
 // Encode encodes src into w considering the options in o.
 //
-// TODO(bep) Can we handle *image.YCbCr without conversion?
-// TODO(bep) check filled alpha channel.
+// Any src that isn't one of *image.RGBA, *image.NRGBA, or *image.Gray
+// will be converted to *image.NRGBA using draw.Draw first.
+//
 func Encode(w io.Writer, src image.Image, o webpoptions.EncodingOptions) error {
 	config, err := encodingOptionsToCConfig(o)
 	if err != nil {

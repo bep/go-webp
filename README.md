@@ -1,7 +1,7 @@
-[![Go Report Card](https://goreportcard.com/badge/github.com/bep/golibwebp)](https://goreportcard.com/report/github.com/bep/golibwebp)
-[![libwebp Version](https://img.shields.io/badge/libwebp-v1.2.0-blue)](https://github.com/sass/libwebp)
-[![codecov](https://codecov.io/gh/bep/golibwebp/branch/master/graph/badge.svg)](https://codecov.io/gh/bep/golibwebp)
-[![GoDoc](https://godoc.org/github.com/bep/golibwebp/libwebp?status.svg)](https://godoc.org/github.com/bep/golibwebp/libwebp)
+[![Go Report Card](https://goreportcard.com/badge/github.com/bep/gowebp)](https://goreportcard.com/report/github.com/bep/gowebp)
+[![libwebp Version](https://img.shields.io/badge/libwebp-v1.2.0-blue)](https://github.com/webmproject/libwebp)
+[![codecov](https://codecov.io/gh/bep/gowebp/branch/master/graph/badge.svg)](https://codecov.io/gh/bep/gowebp)
+[![GoDoc](https://godoc.org/github.com/bep/gowebp/libwebp?status.svg)](https://godoc.org/github.com/bep/gowebp/libwebp)
 
 This library provides C bindings and an API for **encoding** Webp images using Google's [libwebp](https://github.com/webmproject/libwebp).
 

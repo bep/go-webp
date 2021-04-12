@@ -10,6 +10,10 @@ import (
 )
 
 // Encode encodes src as Webp into w using the options in o.
+//
+// Any src that isn't one of *image.RGBA, *image.NRGBA, or *image.Gray
+// will be converted to *image.NRGBA using draw.Draw first.
+//
 func Encode(w io.Writer, src image.Image, o webpoptions.EncodingOptions) error {
 	return libwebp.Encode(w, src, o)
 }

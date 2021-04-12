@@ -30,13 +30,13 @@ type testCase struct {
 }
 
 var testCases = []testCase{
-	{"lossy", "source.jpg", webpoptions.EncodingOptions{Quality: 75, EncodingPreset: webpoptions.EncodingPresetPhoto, UseSharpYuv: true}},
+	{"lossy", "sunset.jpg", webpoptions.EncodingOptions{Quality: 75, EncodingPreset: webpoptions.EncodingPresetPhoto, UseSharpYuv: true}},
 	{"lossless", "source.jpg", webpoptions.EncodingOptions{}},
 	{"bw", "bw-gopher.png", webpoptions.EncodingOptions{Quality: 75}},
 }
 
 func TestEncode(t *testing.T) {
-	writeGolden := false
+	writeGolden := true
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
 			r, err := os.Open(filepath.Join("../test_data/images", test.inputFile))
