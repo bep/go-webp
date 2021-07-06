@@ -33,10 +33,11 @@ var testCases = []testCase{
 	{"lossy", "sunset.jpg", webpoptions.EncodingOptions{Quality: 75, EncodingPreset: webpoptions.EncodingPresetPhoto, UseSharpYuv: true}},
 	{"lossless", "source.jpg", webpoptions.EncodingOptions{}},
 	{"bw", "bw-gopher.png", webpoptions.EncodingOptions{Quality: 75}},
+	{"transparent-32", "fuzzy-cirlcle.png", webpoptions.EncodingOptions{Quality: 75}},
 }
 
 func TestEncode(t *testing.T) {
-	writeGolden := true
+	writeGolden := false
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
 			r, err := os.Open(filepath.Join("../test_data/images", test.inputFile))
