@@ -142,10 +142,8 @@ func BenchmarkEncode(b *testing.B) {
 					b.Fatal(err)
 				}
 			}
-
 		})
 	}
-
 }
 
 // Just to have something to compare with.
