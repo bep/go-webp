@@ -1,5 +1,5 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/bep/gowebp)](https://goreportcard.com/report/github.com/bep/gowebp)
-[![libwebp Version](https://img.shields.io/badge/libwebp-v1.2.4-blue)](https://github.com/webmproject/libwebp)
+[![libwebp Version](https://img.shields.io/badge/libwebp-v1.2.0-blue)](https://github.com/webmproject/libwebp)
 [![codecov](https://codecov.io/gh/bep/gowebp/branch/master/graph/badge.svg)](https://codecov.io/gh/bep/gowebp)
 [![GoDoc](https://godoc.org/github.com/bep/gowebp/libwebp?status.svg)](https://godoc.org/github.com/bep/gowebp/libwebp)
 
