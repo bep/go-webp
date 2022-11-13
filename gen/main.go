@@ -23,7 +23,8 @@ func main() {
 	rootDir := path.Join(path.Dir(filename), "..")
 
 	dstDir := filepath.Join(rootDir, "internal/libwebp")
-	srcDir := filepath.Join(rootDir, "libwebp_src", "src")
+	srcFolders := []string{"src", "sharpyuv"}
+	srcBaseDir := filepath.Join(rootDir, "libwebp_src")
 
 	// The Go and the Webp source must live side-by-side in the same
 	// directory.
@@ -45,29 +46,33 @@ func main() {
 
 	csourceRe := regexp.MustCompile(`\.[ch]$`)
 
-	err = filepath.Walk(srcDir, func(path string, fi os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if fi.IsDir() || !csourceRe.MatchString(fi.Name()) {
-			return nil
-		}
+	for _, srcFolder := range srcFolders {
+		srcDir := filepath.Join(srcBaseDir, srcFolder)
 
-		filename := filepath.ToSlash(strings.TrimPrefix(path, srcDir))
-		filename = strings.TrimPrefix(filename, "/")
-		target := filepath.Join(dstDir, fi.Name())
+		err = filepath.Walk(srcDir, func(path string, fi os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if fi.IsDir() || !csourceRe.MatchString(fi.Name()) {
+				return nil
+			}
 
-		if err := ioutil.WriteFile(target, []byte(fmt.Sprintf(`#ifndef LIBWEBP_NO_SRC
-#include "../../libwebp_src/src/%s"
+			filename := filepath.ToSlash(strings.TrimPrefix(path, srcBaseDir))
+			filename = strings.TrimPrefix(filename, "/")
+			target := filepath.Join(dstDir, fi.Name())
+
+			if err := ioutil.WriteFile(target, []byte(fmt.Sprintf(`#ifndef LIBWEBP_NO_SRC
+#include "../../libwebp_src/%s"
 #endif
 `, filename)), 0o644); err != nil {
-			return err
+				return err
+			}
+
+			return nil
+		})
+
+		if err != nil {
+			log.Fatal(err)
 		}
-
-		return nil
-	})
-
-	if err != nil {
-		log.Fatal(err)
 	}
 }
