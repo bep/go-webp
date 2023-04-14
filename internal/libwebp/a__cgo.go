@@ -3,5 +3,5 @@
 
 package libwebp
 
-// #cgo linux LDFLAGS: -lm
+// #cgo unix LDFLAGS: -lm
 import "C"
