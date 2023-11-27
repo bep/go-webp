@@ -1,5 +1,5 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/bep/gowebp)](https://goreportcard.com/report/github.com/bep/gowebp)
-[![libwebp Version](https://img.shields.io/badge/libwebp-v1.2.4-blue)](https://github.com/webmproject/libwebp)
+[![libwebp Version](https://img.shields.io/badge/libwebp-v1.3.2-blue)](https://github.com/webmproject/libwebp)
 [![codecov](https://codecov.io/gh/bep/gowebp/branch/master/graph/badge.svg)](https://codecov.io/gh/bep/gowebp)
 [![GoDoc](https://godoc.org/github.com/bep/gowebp/libwebp?status.svg)](https://godoc.org/github.com/bep/gowebp/libwebp)
 
@@ -12,7 +12,8 @@ It is based on [go-webp](https://github.com/kolesa-team/go-webp), but this inclu
 
 1. Pull in the relevant libwebp version, e.g. `./pull-libwebp.sh v1.2.0`
 2. Regenerate wrappers with `go generate ./gen`
-3. Update the libwebp version badge above.
+3. Delete `libwebp_src/swig` (we're not using that)
+4. Update the libwebp version badge above.
 
 ## Local development
 
