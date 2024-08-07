@@ -4,7 +4,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -30,7 +29,7 @@ func main() {
 	// directory.
 	//
 	// The custom bindings are named with a "a__" prefix. Keep those.
-	fis, err := ioutil.ReadDir(dstDir)
+	fis, err := os.ReadDir(dstDir)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -61,7 +60,7 @@ func main() {
 			filename = strings.TrimPrefix(filename, "/")
 			target := filepath.Join(dstDir, fi.Name())
 
-			if err := ioutil.WriteFile(target, []byte(fmt.Sprintf(`#ifndef LIBWEBP_NO_SRC
+			if err := os.WriteFile(target, []byte(fmt.Sprintf(`#ifndef LIBWEBP_NO_SRC
 #include "../../libwebp_src/%s"
 #endif
 `, filename)), 0o644); err != nil {
@@ -70,7 +69,6 @@ func main() {
 
 			return nil
 		})
-
 		if err != nil {
 			log.Fatal(err)
 		}

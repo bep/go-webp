@@ -6,10 +6,7 @@ import (
 	"image"
 	"image/draw"
 	"image/jpeg"
-	_ "image/jpeg"
-	_ "image/png"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -108,7 +105,7 @@ func TestEncodeLongRunning(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if err = Encode(ioutil.Discard, img, test.opts); err != nil {
+			if err = Encode(io.Discard, img, test.opts); err != nil {
 				t.Fatal(err)
 			}
 		}
@@ -138,7 +135,7 @@ func BenchmarkEncode(b *testing.B) {
 
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
-				if err = Encode(ioutil.Discard, imgrgba, test.opts); err != nil {
+				if err = Encode(io.Discard, imgrgba, test.opts); err != nil {
 					b.Fatal(err)
 				}
 			}
@@ -163,7 +160,7 @@ func BenchmarkEncodeJpeg(b *testing.B) {
 	}
 
 	for i := 0; i < b.N; i++ {
-		if err = jpeg.Encode(ioutil.Discard, img, opts); err != nil {
+		if err = jpeg.Encode(io.Discard, img, opts); err != nil {
 			b.Fatal(err)
 		}
 	}
